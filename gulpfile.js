@@ -109,7 +109,6 @@ gulp.task( 'dist', function() {
       baseUrl: 'bower_components',
       optimize: 'none',
       include: [
-        'jquery-bridget/jquery-bridget',
         'draggabilly/draggabilly'
       ],
       paths: {

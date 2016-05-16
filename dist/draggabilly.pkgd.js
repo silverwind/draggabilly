@@ -5,151 +5,6 @@
  * MIT license
  */
 
-/**
- * Bridget makes jQuery widgets
- * v2.0.0
- * MIT license
- */
-
-/* jshint browser: true, strict: true, undef: true, unused: true */
-
-( function( window, factory ) {
-  
-  /* globals define: false, module: false, require: false */
-
-  if ( typeof define == 'function' && define.amd ) {
-    // AMD
-    define( 'jquery-bridget/jquery-bridget',[ 'jquery' ], function( jQuery ) {
-      factory( window, jQuery );
-    });
-  } else if ( typeof module == 'object' && module.exports ) {
-    // CommonJS
-    module.exports = factory(
-      window,
-      require('jquery')
-    );
-  } else {
-    // browser global
-    window.jQueryBridget = factory(
-      window,
-      window.jQuery
-    );
-  }
-
-}( window, function factory( window, jQuery ) {
-
-
-// ----- utils ----- //
-
-var arraySlice = Array.prototype.slice;
-
-// helper function for logging errors
-// $.error breaks jQuery chaining
-var console = window.console;
-var logError = typeof console == 'undefined' ? function() {} :
-  function( message ) {
-    console.error( message );
-  };
-
-// ----- jQueryBridget ----- //
-
-function jQueryBridget( namespace, PluginClass, $ ) {
-  $ = $ || jQuery || window.jQuery;
-  if ( !$ ) {
-    return;
-  }
-
-  // add option method -> $().plugin('option', {...})
-  if ( !PluginClass.prototype.option ) {
-    // option setter
-    PluginClass.prototype.option = function( opts ) {
-      // bail out if not an object
-      if ( !$.isPlainObject( opts ) ){
-        return;
-      }
-      this.options = $.extend( true, this.options, opts );
-    };
-  }
-
-  // make jQuery plugin
-  $.fn[ namespace ] = function( arg0 /*, arg1 */ ) {
-    if ( typeof arg0 == 'string' ) {
-      // method call $().plugin( 'methodName', { options } )
-      // shift arguments by 1
-      var args = arraySlice.call( arguments, 1 );
-      return methodCall( this, arg0, args );
-    }
-    // just $().plugin({ options })
-    plainCall( this, arg0 );
-    return this;
-  };
-
-  // $().plugin('methodName')
-  function methodCall( $elems, methodName, args ) {
-    var returnValue;
-    var pluginMethodStr = '$().' + namespace + '("' + methodName + '")';
-
-    $elems.each( function( i, elem ) {
-      // get instance
-      var instance = $.data( elem, namespace );
-      if ( !instance ) {
-        logError( namespace + ' not initialized. Cannot call methods, i.e. ' +
-          pluginMethodStr );
-        return;
-      }
-
-      var method = instance[ methodName ];
-      if ( !method || methodName.charAt(0) == '_' ) {
-        logError( pluginMethodStr + ' is not a valid method' );
-        return;
-      }
-
-      // apply method, get return value
-      var value = method.apply( instance, args );
-      // set return value if value is returned, use only first value
-      returnValue = returnValue === undefined ? value : returnValue;
-    });
-
-    return returnValue !== undefined ? returnValue : $elems;
-  }
-
-  function plainCall( $elems, options ) {
-    $elems.each( function( i, elem ) {
-      var instance = $.data( elem, namespace );
-      if ( instance ) {
-        // set options & init
-        instance.option( options );
-        instance._init();
-      } else {
-        // initialize new instance
-        instance = new PluginClass( elem, options );
-        $.data( elem, namespace, instance );
-      }
-    });
-  }
-
-  updateJQuery( $ );
-
-}
-
-// ----- updateJQuery ----- //
-
-// set $.bridget for v1 backwards compatibility
-function updateJQuery( $ ) {
-  if ( !$ || ( $ && $.bridget ) ) {
-    return;
-  }
-  $.bridget = jQueryBridget;
-}
-
-updateJQuery( jQuery || window.jQuery );
-
-// -----  ----- //
-
-return jQueryBridget;
-
-}));
-
 /*!
  * getSize v2.0.2
  * measure size of elements
@@ -160,7 +15,7 @@ return jQueryBridget;
 /*global define: false, module: false, console: false */
 
 ( function( window, factory ) {
-  
+  'use strict';
 
   if ( typeof define == 'function' && define.amd ) {
     // AMD
@@ -176,7 +31,7 @@ return jQueryBridget;
   }
 
 })( window, function factory() {
-
+'use strict';
 
 // -------------------------- helpers -------------------------- //
 
@@ -1143,18 +998,12 @@ var docElem = document.documentElement;
 var transformProperty = typeof docElem.style.transform == 'string' ?
   'transform' : 'WebkitTransform';
 
-var jQuery = window.jQuery;
-
 // --------------------------  -------------------------- //
 
 function Draggabilly( element, options ) {
   // querySelector if string
   this.element = typeof element == 'string' ?
     document.querySelector( element ) : element;
-
-  if ( jQuery ) {
-    this.$element = jQuery( this.element );
-  }
 
   // options
   this.options = extend( {}, this.constructor.defaults );
@@ -1217,7 +1066,7 @@ proto.setHandles = function() {
 };
 
 /**
- * emits events via EvEmitter and jQuery events
+ * emits events via EvEmitter
  * @param {String} type - name of event
  * @param {Event} event - original event
  * @param {Array} args - extra arguments
@@ -1225,19 +1074,6 @@ proto.setHandles = function() {
 proto.dispatchEvent = function( type, event, args ) {
   var emitArgs = [ event ].concat( args );
   this.emitEvent( type, emitArgs );
-  var jQuery = window.jQuery;
-  // trigger jQuery event
-  if ( jQuery && this.$element ) {
-    if ( event ) {
-      // create jQuery event
-      var $event = jQuery.Event( event );
-      $event.type = type;
-      this.$element.trigger( $event, args );
-    } else {
-      // just trigger with type if no event available
-      this.$element.trigger( type, args );
-    }
-  }
 };
 
 // -------------------------- position -------------------------- //
@@ -1515,22 +1351,7 @@ proto.destroy = function() {
   this.element.style.position = '';
   // unbind handles
   this.unbindHandles();
-  // remove jQuery data
-  if ( this.$element ) {
-    this.$element.removeData('draggabilly');
-  }
 };
-
-// ----- jQuery bridget ----- //
-
-// required for jQuery bridget
-proto._init = noop;
-
-if ( jQuery && jQuery.bridget ) {
-  jQuery.bridget( 'draggabilly', Draggabilly );
-}
-
-// -----  ----- //
 
 return Draggabilly;
 

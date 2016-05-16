@@ -7,8 +7,7 @@
     "unidragger": "~2.1.0"
   },
   "devDependencies": {
-    "qunit": "~1.20",
-    "jquery-bridget": "~2.0.0"
+    "qunit": "~1.20"
   },
   "homepage": "http://draggabilly.desandro.com",
   "authors": [

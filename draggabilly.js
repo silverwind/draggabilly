@@ -82,18 +82,12 @@ var docElem = document.documentElement;
 var transformProperty = typeof docElem.style.transform == 'string' ?
   'transform' : 'WebkitTransform';
 
-var jQuery = window.jQuery;
-
 // --------------------------  -------------------------- //
 
 function Draggabilly( element, options ) {
   // querySelector if string
   this.element = typeof element == 'string' ?
     document.querySelector( element ) : element;
-
-  if ( jQuery ) {
-    this.$element = jQuery( this.element );
-  }
 
   // options
   this.options = extend( {}, this.constructor.defaults );
@@ -156,7 +150,7 @@ proto.setHandles = function() {
 };
 
 /**
- * emits events via EvEmitter and jQuery events
+ * emits events via EvEmitter
  * @param {String} type - name of event
  * @param {Event} event - original event
  * @param {Array} args - extra arguments
@@ -164,19 +158,6 @@ proto.setHandles = function() {
 proto.dispatchEvent = function( type, event, args ) {
   var emitArgs = [ event ].concat( args );
   this.emitEvent( type, emitArgs );
-  var jQuery = window.jQuery;
-  // trigger jQuery event
-  if ( jQuery && this.$element ) {
-    if ( event ) {
-      // create jQuery event
-      var $event = jQuery.Event( event );
-      $event.type = type;
-      this.$element.trigger( $event, args );
-    } else {
-      // just trigger with type if no event available
-      this.$element.trigger( type, args );
-    }
-  }
 };
 
 // -------------------------- position -------------------------- //
@@ -454,22 +435,7 @@ proto.destroy = function() {
   this.element.style.position = '';
   // unbind handles
   this.unbindHandles();
-  // remove jQuery data
-  if ( this.$element ) {
-    this.$element.removeData('draggabilly');
-  }
 };
-
-// ----- jQuery bridget ----- //
-
-// required for jQuery bridget
-proto._init = noop;
-
-if ( jQuery && jQuery.bridget ) {
-  jQuery.bridget( 'draggabilly', Draggabilly );
-}
-
-// -----  ----- //
 
 return Draggabilly;
 
