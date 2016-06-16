@@ -216,7 +216,7 @@ return getSize;
 });
 
 /**
- * EvEmitter v1.0.3
+ * EvEmitter v1.0.2
  * Lil' event emitter
  * MIT License
  */
@@ -225,7 +225,7 @@ return getSize;
 
 ( function( global, factory ) {
   // universal module definition
-  /* jshint strict: false */ /* globals define, module, window */
+  /* jshint strict: false */ /* globals define, module */
   if ( typeof define == 'function' && define.amd ) {
     // AMD - RequireJS
     define( 'ev-emitter/ev-emitter',factory );
@@ -237,7 +237,7 @@ return getSize;
     global.EvEmitter = factory();
   }
 
-}( typeof window != 'undefined' ? window : this, function() {
+}( this, function() {
 
 
 
